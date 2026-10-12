@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/QuizSync.Server.Cli/QuizSync.Server.Cli.csproj" />
+    <Project Path="src/QuizSync.Server.Core/QuizSync.Server.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/QuizSync.Server.Tests/QuizSync.Server.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  题目卡片。复刻 1.1.0 的 `QuestionCard`
+  （soundcode/packages/quizsync_ui/lib/src/question_card.dart）。
+
+  卡片外壳用 XAML（Card 圆角 16 / 1px outline 描边 / margin h14 v7 / padding 18,16,18,16），
+  内部各块**在代码里按条件拼**：卡片有十来个「有才显示」的块（材料、选项、答案、
+  无答案提示、解析、告警、徽标……），全写进 XAML 会变成十几层 Visibility 绑定，
+  反而看不清结构。顺序与样式全部按 ui-spec-desktop §4.1/§4.2。
+-->
+<UserControl
+    x:Class="QuizSync.App.Controls.QuestionCardView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Border x:Name="Card" Style="{StaticResource QsQuestionCardStyle}">
+        <StackPanel x:Name="Body" />
+    </Border>
+</UserControl>

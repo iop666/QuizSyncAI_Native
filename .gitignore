@@ -1,0 +1,51 @@
+# QuizSync AI 原生线（windows/ + android/）
+
+# 编辑器与 IDE
+.idea/
+.vscode/
+*.iml
+*.user
+
+# .NET 构建产物（windows/ 与并入的 server/ 都覆盖）
+**/bin/
+**/obj/
+*.pdb
+*.user
+
+# Kotlin/Gradle 构建产物
+android/.gradle/
+android/.kotlin/
+android/**/build/
+android/local.properties
+gradle-app.setting
+.gradle/
+.kotlin/
+
+# 安卓签名（绝不提交）
+*.jks
+*.keystore
+keystore/
+android/key.properties
+
+# 运行期数据：数据库、图片缓存、日志、备份
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+/userdata/
+/logs/
+/backups/
+data/
+*.log
+
+# 打包产物
+/dist/
+*.zip
+*.msix
+*.apk
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# Agent 工作区状态（本地）
+/.workbuddy/

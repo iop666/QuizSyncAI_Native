@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="QuizSync.App.Pages.FloatWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+      桌面悬浮窗（规格 ui-spec-desktop §2.5 → SPEC §6.1–6.5）。
+
+      结构逐条照规格：
+        顶部第一栏：左边「第几次识别 / 时间」，右边一排**图标按钮**（悬停显示名称），
+                    顺序 = 下一条 · 上一条 · 重新识别 · 默认模式 · 锁定位置。
+                    **这一栏是唯一的拖动区**（整窗可拖会和内容滚动/点选打架 —— 1.1.0 的实测结论）。
+        内容区：默认模式 = 一题一段纯文本（可拖选复制）；详细解析模式 = 与主界面同一套题目卡片。
+        底部：「识别一张」「多页识别」；默认模式多一个「复制识别内容」；多页时换成
+              「结束并上传」「继续添加页」「取消多页」。
+        识别进行中的提示贴在**内容区下部**（不是窗口底部）。
+        滚轮滚动内容区（ScrollViewer 自带）。
+
+      **圆角**：窗口是「无边框无标题栏」，Windows 不会替它画圆角（与 1.1.0 的圆角应用图标同一个坑）。
+      做法是 `Chrome` 这层 Border 画 12 像素圆角 + 窗口背板设 `TransparentBackdrop`，
+      圆角外的像素**不画**（透出桌面），见 FloatWindow.xaml.cs 的构造期注释。
+
+      ⚠️ 公式：按规格如实不支持排版 —— LaTeX 会原样显示。主界面用的是 `MathTextBlock`，
+        悬浮窗**故意不用**：那是"与主界面同源"的另一条路（要按片出图、缓存、DPR 一堆事），
+        规格对悬浮窗的明文要求就是「不支持显示公式，需要看排版好的公式请回主窗口」。
+        详细模式复用 `QuestionCardView` 时这一点会**自动对齐主界面**（它也走 MathTextBlock）——
+        这处偏差记在 docs/DECISIONS.md，别当成漏做。
+    -->
+
+    <Grid x:Name="Root">
+        <!-- 圆角 + 描边这一层：它的底色由 ApplyChrome 按配色/明暗刷（不是窗口底色）。 -->
+        <Border
+            x:Name="Chrome"
+            CornerRadius="12"
+            BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- 顶部第一栏（唯一拖动区） -->
+                <Grid x:Name="TopBar" Grid.Row="0" Padding="12,8,8,8" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        x:Name="SessionLabel"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        TextTrimming="CharacterEllipsis" />
+                    <StackPanel
+                        x:Name="TopActions"
+                        Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="2" />
+                </Grid>
+
+                <!-- 内容区 + 识别进行中的提示（贴内容区下部） -->
+                <Grid Grid.Row="1">
+                    <ScrollViewer
+                        x:Name="ContentScroll"
+                        Padding="12,4,12,12"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollMode="Disabled">
+                        <StackPanel x:Name="ContentHost" Spacing="10" />
+                    </ScrollViewer>
+
+                    <Border
+                        x:Name="ProgressHint"
+                        Visibility="Collapsed"
+                        VerticalAlignment="Bottom"
+                        Margin="12,0,12,10"
+                        CornerRadius="10"
+                        Padding="10,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ProgressRing x:Name="HintRing" Width="16" Height="16" IsActive="False" />
+                            <TextBlock x:Name="ProgressText" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <StackPanel
+                    x:Name="BottomBar"
+                    Grid.Row="2"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    Padding="12,6,12,12" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

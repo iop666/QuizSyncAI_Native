@@ -1,0 +1,19 @@
+{"step":1,"title":"配对拿 token（WS 握手也用它鉴权：只认 Authorization 头）","do":{"http":{"method":"POST","path":"/api/v1/pair","auth":"none","json":{"code":"$pairingCode","device_id":"android-device-1","device_name":"Pixel 7","platform":"android","app_version":"1.0.0"}}},"expect":{"status":200,"capture":{"token":"$.token"}}}
+{"step":2,"title":"主机已新建并选中合集（hello 要带上它，客户端据此判断能否发起识别）","do":{"seed":{"collection":{"id":"c-ws","name":"WS 用合集"},"active_collection":"c-ws"}}}
+{"step":3,"title":"连上 /ws（Authorization: Bearer <token>）","do":{"ws":{"connect":"device"}}}
+{"step":4,"title":"服务端建连先发 hello：server_device_id 必须是**主机自己**的 id，并带上当前合集","do":{"ws":{"expect":{"type":"hello","server_device_id":"server-device-1","protocol_version":1,"active_collection_id":"c-ws","active_collection_name":"WS 用合集"}}}}
+{"step":5,"title":"客户端回一条 hello（device_id/app_version/platform）——服务端不回复，连接保持","do":{"ws":{"send":{"type":"hello","device_id":"android-device-1","app_version":"1.0.0","platform":"android"}}}}
+{"step":6,"title":"桌面端切换合集后调用广播入口","do":{"server":{"collection_changed":true}}}
+{"step":7,"title":"客户端立刻收到 collection_changed（不必等下一次轮询）","do":{"ws":{"expect":{"type":"collection_changed","collection_id":"c-ws","collection_name":"WS 用合集"}}}}
+{"step":8,"title":"还没有任务时**不该**有 task_update（负向断言）","do":{"ws":{"expect_none":{"type":"task_update"},"max_ms":300}}}
+{"step":9,"title":"上传一页图","do":{"http":{"method":"POST","path":"/api/v1/images","auth":"device","multipart":{"field":"file","bytes":1024,"filename":"ws.jpg"}}},"expect":{"status":200,"capture":{"hash":"$.image_hash"}}}
+{"step":10,"title":"提交识别任务（HTTP 202）","do":{"http":{"method":"POST","path":"/api/v1/tasks","auth":"device","json":{"task_id":"t-ws-1","image_hash":"$hash","source_device":"android-device-1"}}},"expect":{"status":202,"capture":{"session_id":"$.session_id"}}}
+{"step":11,"title":"同一个任务在 WS 上推状态：queued → analyzing（expect 会跳过更早的 queued）","do":{"ws":{"expect":{"type":"task_update","task_id":"t-ws-1","status":"analyzing"}}}}
+{"step":12,"title":"识别完成后推 task_result，载荷里带完整会话（含题目数）","do":{"ws":{"expect":{"type":"task_result","task_id":"t-ws-1","session":{"session_id":"$session_id","status":"done","question_count":1}}}}}
+{"step":13,"title":"服务端**从不**发 ops 事件（客户端那条分支是死分支，负向钉住）","do":{"ws":{"expect_none":{"type":"ops"},"max_ms":400}}}
+{"step":14,"title":"再配一台设备（第二轮：吊销要能推到它的连接上）","do":{"http":{"method":"POST","path":"/api/v1/pair","auth":"none","json":{"code":"$pairingCode","device_id":"android-device-2","device_name":"Mi 11","platform":"android","app_version":"1.0.0"}}},"expect":{"status":200,"capture":{"token2":"$.token"}}}
+{"step":15,"title":"第二台设备连上 /ws（同一台主机允许多条连接，按 device_id 各一条）","do":{"ws":{"connect":"device:token2"}}}
+{"step":16,"title":"它同样先收到 hello","do":{"ws":{"expect":{"type":"hello","server_device_id":"server-device-1"}}}}
+{"step":17,"title":"主机吊销这台设备（HTTP 200）","do":{"http":{"method":"DELETE","path":"/api/v1/devices/android-device-2","auth":"device:token2"}},"expect":{"status":200,"json":{"revoked":"android-device-2"}}}
+{"step":18,"title":"被吊销的设备立刻收到 device_revoked","do":{"ws":{"expect":{"type":"device_revoked"}}}}
+{"step":19,"title":"随后服务端**主动关闭**这条连接（客户端据此停止重连并让用户重新配对）","do":{"ws":{"expect_closed":true,"max_ms":3000}}}

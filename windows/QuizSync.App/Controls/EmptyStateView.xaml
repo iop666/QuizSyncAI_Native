@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  空状态。逐项复刻 1.1.0 的 `EmptyState`
+  （soundcode/packages/quizsync_ui/lib/src/widgets.dart 的 class EmptyState）：
+    Center → Padding(all AppSpacing.xl = 24) → Column(min)
+      · 68×68 圆形底（primary@10%）+ 图标 32（primary@90%）
+      · 16
+      · 标题（titleMedium，居中）
+      · 8 + 说明（bodySmall，onSurfaceVariant，height 1.6，居中）
+      · 16 + 动作行（Wrap，间距 8，居中）
+-->
+<UserControl
+    x:Class="QuizSync.App.Controls.EmptyStateView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="24" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520">
+            <Border x:Name="IconDisc" Width="68" Height="68" CornerRadius="34" HorizontalAlignment="Center">
+                <FontIcon x:Name="EmptyGlyph" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+
+            <TextBlock x:Name="TitleText" Margin="0,16,0,0"
+                       HorizontalAlignment="Center" TextAlignment="Center"
+                       FontFamily="{StaticResource QsFontDemibold}" FontSize="{StaticResource QsFontSizeSubtitle}"
+                       Foreground="{ThemeResource QsOnSurfaceBrush}" TextWrapping="Wrap" />
+
+            <TextBlock x:Name="MessageText" Margin="0,8,0,0" Visibility="Collapsed"
+                       HorizontalAlignment="Center" TextAlignment="Center"
+                       FontSize="{StaticResource QsFontSizeCaption}" LineHeight="19"
+                       Foreground="{ThemeResource QsOnSurfaceVariantBrush}" TextWrapping="Wrap" />
+
+            <StackPanel x:Name="ActionsHost" Margin="0,16,0,0" Visibility="Collapsed"
+                        Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" />
+        </StackPanel>
+    </Grid>
+</UserControl>

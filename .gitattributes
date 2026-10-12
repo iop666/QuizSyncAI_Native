@@ -1,0 +1,38 @@
+# 文本文件统一 LF 行尾（.ps1 例外见下）
+* text=auto eol=lf
+
+# PowerShell 脚本：本机是 PowerShell 5.1，必须 UTF-8 with BOM，
+# 且用 CRLF 打印更符合 Windows 习惯；让 git 原样处理二进制避免 BOM 被改写
+*.ps1 text eol=crlf
+*.iss text eol=crlf
+
+# 二进制文件：不做行尾转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.jks binary
+*.keystore binary
+*.dll binary
+*.exe binary
+*.zip binary
+*.apk binary
+*.sqlite binary
+
+# 明确文本类型
+*.cs text
+*.xaml text
+*.csproj text
+*.props text
+*.slnx text
+*.kt text
+*.kts text
+*.gradle text
+*.json text
+*.md text
+*.py text
+*.sql text
+*.xml text
+*.yml text
+*.yaml text

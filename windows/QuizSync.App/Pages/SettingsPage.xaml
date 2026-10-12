@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  设置页外壳。**2.0 起改用原生 NavigationView**（原来是一套手搓的 Grid + Button 左导航）。
+
+  组织方式照 docs/design-system-plan.md §3：
+    NavigationView（左侧 10 个分类）
+    └─ ScrollViewer(padding 水平 48 / 垂直 28)
+        └─ Align(topCenter) → 内容 maxWidth 940
+
+  与 1.1.0 的对应关系：
+    * 左栏宽度 232 → NavigationView 的 OpenPaneLength（原生控件自己管展开/收起/图标栏）；
+    * 1.1.0 的 880 断点 → CompactModeThresholdWidth / ExpandedModeThresholdWidth（原生阈值）；
+    * 顶部「返回 + 设置」→ NavigationView 自带的返回按钮 + PaneTitle；
+    * 底部版本号 → PaneFooter。
+
+  设置页**没有 AppBar**（1.1.0 的 Scaffold 就没有），返回入口现在是 NavigationView 的返回按钮。
+-->
+<Page
+    x:Class="QuizSync.App.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource QsCanvasBrush}">
+
+    <NavigationView
+        x:Name="Nav"
+        AlwaysShowHeader="False"
+        BackRequested="OnNavBackRequested"
+        Background="{ThemeResource QsCanvasBrush}"
+        CompactModeThresholdWidth="640"
+        ExpandedModeThresholdWidth="880"
+        IsBackButtonVisible="Visible"
+        IsSettingsVisible="False"
+        OpenPaneLength="232"
+        PaneDisplayMode="Auto"
+        PaneTitle="设置"
+        SelectionChanged="OnNavSelectionChanged">
+        <!-- ⚠️ `IsBackEnabled="True"` 是**必须**的（用户报过「设置页左上角返回无用」）：
+             `IsBackButtonVisible="Visible"` 只负责把按钮**画出来**，它的启用状态由
+             `IsBackEnabled` 决定，而后者默认是 **false** —— 于是按钮灰着、点不动，
+             合成点击与 UIA Invoke 都无效（实测 id=[NavigationViewBackButton] enabled=False）。
+             这里恒定给 true：本页的返回语义是「能回就回栈、不能回就回主界面」，
+             两种情况都有去处，不存在「无处可去」的时刻。 -->
+        <NavigationView.IsBackEnabled>True</NavigationView.IsBackEnabled>
+
+        <NavigationView.PaneFooter>
+            <TextBlock
+                x:Name="VersionText"
+                Margin="16,8,16,16"
+                FontSize="{StaticResource QsFontSizeCaption}"
+                Foreground="{ThemeResource QsOnSurfaceVariantBrush}"
+                TextTrimming="CharacterEllipsis" />
+        </NavigationView.PaneFooter>
+
+        <ScrollViewer
+            x:Name="ContentScroll"
+            Padding="48,20,48,20"
+            HorizontalScrollMode="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <!-- 官方 workaround（CommunityToolkit SettingsExpander.md）：
+                 设了 MaxWidth 的 StackPanel 必须包在 Grid 里，否则用 SettingsExpander
+                 展开时会有视觉故障。现在没有 Expander 也先按它办，省得以后踩。
+
+                 ⚠️ `HorizontalAlignment` **必须是 Stretch，不能是 Center**（用户报过
+                 「设置界面每页都不等宽」）：`Center` 的排列宽度取的是**内容期望宽度**，
+                 于是每个分类页的宽度 = 它最宽那个子元素的宽度 —— 10 个分类 10 种宽度。
+                 `Stretch` + `MaxWidth=940` 才是「最多 940、取满可用宽度、超限时居中」。 -->
+            <Grid>
+                <StackPanel
+                    x:Name="ContentHost"
+                    MaxWidth="940"
+                    HorizontalAlignment="Stretch" />
+            </Grid>
+        </ScrollViewer>
+    </NavigationView>
+</Page>

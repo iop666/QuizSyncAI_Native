@@ -1,0 +1,190 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  外壳样式表。**这里不发明任何数值** —— 每一项都来自冻结的 1.1.0 源码，
+  出处写在每一项的上方注释里（路径相对 soundcode/apps/desktop 与
+  soundcode/packages/quizsync_ui）。复刻对照文档：
+  D:\DeepseekHarness\TemporaryConversationFile\phase0-e2e\ui-spec-desktop.md
+
+  刻意与 DesignTokens.xaml 分开：DesignTokens.xaml 是 tools/gen_design_tokens.py
+  生成的（跨端 token，改了会被 gen_design_tokens 的 check 模式判红），而这个文件是 Windows 端专用的
+  外壳样式，可以自由增改。
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===================================================================
+         字体。MiSans，兜底链 Microsoft YaHei UI → Segoe UI → Microsoft YaHei。
+         出处 desktop/lib/app.dart:103-121。
+         一个 FontFamily 只能指向一个文件，所以按字重拆三份；
+         用的时候**选对的那个资源**，不要只写 FontWeight 指望自动切换。
+         =================================================================== -->
+<!-- 2.0 起**不用随包字体**（用户 2026-09-27 明确要求）：一律系统默认字体。
+         之前随包 4 个 MiSans 字重文件（约 32MB）—— 交付物体积与「和系统其它应用不一致」两个代价
+         都不划算。字重改由各样式里的 FontWeight 表达（见 ShellLayout.xaml）。 -->
+    <FontFamily x:Key="QsFontRegular">Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI</FontFamily>
+    <FontFamily x:Key="QsFontMedium">Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI</FontFamily>
+    <FontFamily x:Key="QsFontDemibold">Segoe UI Variable Display, Segoe UI, Microsoft YaHei UI</FontFamily>
+    <FontFamily x:Key="QsFontBold">Segoe UI Variable Display, Segoe UI, Microsoft YaHei UI</FontFamily>
+    <!-- 等宽：公式渲染失败时按 LaTeX 源码原样显示用。
+         出处 ui_pkg/src/math_text.dart:147-154（fontFamily 'monospace' + Consolas/Courier New 兜底）。 -->
+    <FontFamily x:Key="QsFontMono">Consolas, Courier New</FontFamily>
+
+    <ResourceDictionary.ThemeDictionaries>
+
+        <!-- =============================================================
+             浅色
+             ============================================================= -->
+        <ResourceDictionary x:Key="Light">
+            <!-- ui_pkg/src/app_theme.dart:25-34 —— 固定色，不随种子色变 -->
+            <SolidColorBrush x:Key="QsCanvasBrush2" Color="#FFF3F5F4"/>
+            <SolidColorBrush x:Key="QsSubtleFillBrush" Color="#FFF2F5F3"/>
+
+            <!-- 题目卡片正文前景 fg。ui_pkg/src/question_card.dart:42 -->
+            <SolidColorBrush x:Key="QsCardFgBrush" Color="#FF1F2426"/>
+
+            <!-- 标绿（命中且 needsReview=false）。ui_pkg/src/theme_colors.dart -->
+            <SolidColorBrush x:Key="QsHitGreenBrush" Color="#FF16A34A"/>
+            <SolidColorBrush x:Key="QsHitGreenBgBrush" Color="#FFDCFCE7"/>
+
+            <!-- 标黄（命中但 needsReview=true）。 -->
+            <SolidColorBrush x:Key="QsHitYellowBrush" Color="#FFD97706"/>
+            <SolidColorBrush x:Key="QsHitYellowBgBrush" Color="#FFFEF3C7"/>
+
+            <!-- 复核徽标：**不随明暗变化**（同一组值两套都写）。 -->
+            <SolidColorBrush x:Key="QsReviewBadgeBrush" Color="#FFF59E0B"/>
+            <SolidColorBrush x:Key="QsReviewBadgeBgBrush" Color="#FFFEF3C7"/>
+
+            <!-- 告警正文色 warnText。 -->
+            <SolidColorBrush x:Key="QsWarnTextBrush" Color="#FF92400E"/>
+
+            <!-- 题目不全 incomplete（卡片 2px 黄框 + 顶部横幅）。 -->
+            <SolidColorBrush x:Key="QsIncompleteBrush" Color="#FFEAA100"/>
+            <SolidColorBrush x:Key="QsIncompleteBgBrush" Color="#FFFFF8E1"/>
+
+            <!-- 未命中选项左条 / 判断题未命中边框。 -->
+            <SolidColorBrush x:Key="QsOptionMutedBarBrush" Color="#FFE7EBE9"/>
+            <SolidColorBrush x:Key="QsJudgeIdleStrokeBrush" Color="#FFD3D9D6"/>
+
+            <!-- 解析块。 -->
+            <SolidColorBrush x:Key="QsAnalysisBgBrush" Color="#FFF6F8F7"/>
+            <SolidColorBrush x:Key="QsAnalysisStrokeBrush" Color="#FFE9EDEB"/>
+
+            <!-- 阅读材料块。 -->
+            <SolidColorBrush x:Key="QsMaterialBgBrush" Color="#FFF5F7F9"/>
+            <SolidColorBrush x:Key="QsMaterialStrokeBrush" Color="#FFE3E8EC"/>
+
+            <!-- 无答案提示块（Material orange：浅色 orange[50] 底 + orange[800]@40% 边 + orange[800] 字）。 -->
+            <SolidColorBrush x:Key="QsNoAnswerBgBrush" Color="#FFFFF7ED"/>
+            <SolidColorBrush x:Key="QsNoAnswerStrokeBrush" Color="#669A3412"/>
+            <SolidColorBrush x:Key="QsNoAnswerFgBrush" Color="#FF9A3412"/>
+
+            <!-- 会话状态色。ui_pkg/src/widgets.dart:178-197 -->
+            <SolidColorBrush x:Key="QsStatusIdleBrush" Color="#FF64748B"/>
+            <SolidColorBrush x:Key="QsStatusRunningBrush" Color="#FF2563EB"/>
+            <SolidColorBrush x:Key="QsStatusDoneBrush" Color="#FF16A34A"/>
+            <SolidColorBrush x:Key="QsStatusFailedBrush" Color="#FFDC2626"/>
+
+            <!-- primary 的若干透明度档（浅色 primary = #35693E） -->
+            <SolidColorBrush x:Key="QsPrimaryWashBrush" Color="#1235693E"/>      <!-- @7%  多页暂存条底 -->
+            <SolidColorBrush x:Key="QsPrimaryTintBrush" Color="#1A35693E"/>      <!-- @10% 选中底 -->
+            <SolidColorBrush x:Key="QsPrimaryChipStrokeBrush" Color="#5935693E"/> <!-- @35% 药丸描边 -->
+            <SolidColorBrush x:Key="QsPrimaryTileStrokeBrush" Color="#8C35693E"/> <!-- @55% 选中列表项描边 -->
+
+            <!-- surfaceContainerHighest（Material3 由种子色推导，1.1.0 源码里**没有硬编码值**）。
+                 这里按 M3 中性色 tone≈90 取一个与种子同色相的近似值，并在
+                 docs/DECISIONS.md 里记为「近似」而不是照抄。 -->
+            <SolidColorBrush x:Key="QsSurfaceContainerHighestBrush" Color="#FFE2E6E1"/>
+            <SolidColorBrush x:Key="QsSurfaceContainerHighestSoftBrush" Color="#59E2E6E1"/> <!-- @35% 暂存条非活动底 -->
+
+        </ResourceDictionary>
+
+        <!-- =============================================================
+             深色
+             ============================================================= -->
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="QsCanvasBrush2" Color="#FF0F1113"/>
+            <SolidColorBrush x:Key="QsSubtleFillBrush" Color="#FF191C1F"/>
+
+            <SolidColorBrush x:Key="QsCardFgBrush" Color="#FFEEEEEE"/>
+
+            <SolidColorBrush x:Key="QsHitGreenBrush" Color="#FF4ADE80"/>
+            <SolidColorBrush x:Key="QsHitGreenBgBrush" Color="#FF14351F"/>
+
+            <SolidColorBrush x:Key="QsHitYellowBrush" Color="#FFFBBF24"/>
+            <SolidColorBrush x:Key="QsHitYellowBgBrush" Color="#FF322712"/>
+
+            <SolidColorBrush x:Key="QsReviewBadgeBrush" Color="#FFF59E0B"/>
+            <SolidColorBrush x:Key="QsReviewBadgeBgBrush" Color="#FFFEF3C7"/>
+
+            <SolidColorBrush x:Key="QsWarnTextBrush" Color="#FFFCD34D"/>
+
+            <SolidColorBrush x:Key="QsIncompleteBrush" Color="#FFFACC15"/>
+            <SolidColorBrush x:Key="QsIncompleteBgBrush" Color="#FF2A2410"/>
+
+            <SolidColorBrush x:Key="QsOptionMutedBarBrush" Color="#FF2E3439"/>
+            <SolidColorBrush x:Key="QsJudgeIdleStrokeBrush" Color="#FF3A4046"/>
+
+            <SolidColorBrush x:Key="QsAnalysisBgBrush" Color="#FF171A1D"/>
+            <SolidColorBrush x:Key="QsAnalysisStrokeBrush" Color="#FF262B2F"/>
+
+            <SolidColorBrush x:Key="QsMaterialBgBrush" Color="#FF1B1E21"/>
+            <SolidColorBrush x:Key="QsMaterialStrokeBrush" Color="#FF2A2F34"/>
+
+            <!-- 深色：orange[900]@22% 底 + orange[200]@40% 边 + orange[200] 字 -->
+            <SolidColorBrush x:Key="QsNoAnswerBgBrush" Color="#387C2D12"/>
+            <SolidColorBrush x:Key="QsNoAnswerStrokeBrush" Color="#66FED7AA"/>
+            <SolidColorBrush x:Key="QsNoAnswerFgBrush" Color="#FFFED7AA"/>
+
+            <SolidColorBrush x:Key="QsStatusIdleBrush" Color="#FF9AA4AE"/>
+            <SolidColorBrush x:Key="QsStatusRunningBrush" Color="#FF60A5FA"/>
+            <SolidColorBrush x:Key="QsStatusDoneBrush" Color="#FF4ADE80"/>
+            <SolidColorBrush x:Key="QsStatusFailedBrush" Color="#FFF87171"/>
+
+            <!-- 深色 primary = #9CD4A0 -->
+            <SolidColorBrush x:Key="QsPrimaryWashBrush" Color="#129CD4A0"/>
+            <SolidColorBrush x:Key="QsPrimaryTintBrush" Color="#299CD4A0"/>
+            <SolidColorBrush x:Key="QsPrimaryChipStrokeBrush" Color="#599CD4A0"/>
+            <SolidColorBrush x:Key="QsPrimaryTileStrokeBrush" Color="#8C9CD4A0"/>
+
+            <SolidColorBrush x:Key="QsSurfaceContainerHighestBrush" Color="#FF23282B"/>
+            <SolidColorBrush x:Key="QsSurfaceContainerHighestSoftBrush" Color="#5923282B"/>
+
+        </ResourceDictionary>
+
+        <!-- 高对比：与浅色同值（不额外发明配色）。 -->
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="QsCanvasBrush2" Color="#FFF3F5F4"/>
+            <SolidColorBrush x:Key="QsSubtleFillBrush" Color="#FFF2F5F3"/>
+            <SolidColorBrush x:Key="QsCardFgBrush" Color="#FF1F2426"/>
+            <SolidColorBrush x:Key="QsHitGreenBrush" Color="#FF16A34A"/>
+            <SolidColorBrush x:Key="QsHitGreenBgBrush" Color="#FFDCFCE7"/>
+            <SolidColorBrush x:Key="QsHitYellowBrush" Color="#FFD97706"/>
+            <SolidColorBrush x:Key="QsHitYellowBgBrush" Color="#FFFEF3C7"/>
+            <SolidColorBrush x:Key="QsReviewBadgeBrush" Color="#FFF59E0B"/>
+            <SolidColorBrush x:Key="QsReviewBadgeBgBrush" Color="#FFFEF3C7"/>
+            <SolidColorBrush x:Key="QsWarnTextBrush" Color="#FF92400E"/>
+            <SolidColorBrush x:Key="QsIncompleteBrush" Color="#FFEAA100"/>
+            <SolidColorBrush x:Key="QsIncompleteBgBrush" Color="#FFFFF8E1"/>
+            <SolidColorBrush x:Key="QsOptionMutedBarBrush" Color="#FFE7EBE9"/>
+            <SolidColorBrush x:Key="QsJudgeIdleStrokeBrush" Color="#FFD3D9D6"/>
+            <SolidColorBrush x:Key="QsAnalysisBgBrush" Color="#FFF6F8F7"/>
+            <SolidColorBrush x:Key="QsAnalysisStrokeBrush" Color="#FFE9EDEB"/>
+            <SolidColorBrush x:Key="QsMaterialBgBrush" Color="#FFF5F7F9"/>
+            <SolidColorBrush x:Key="QsMaterialStrokeBrush" Color="#FFE3E8EC"/>
+            <SolidColorBrush x:Key="QsNoAnswerBgBrush" Color="#FFFFF7ED"/>
+            <SolidColorBrush x:Key="QsNoAnswerStrokeBrush" Color="#669A3412"/>
+            <SolidColorBrush x:Key="QsNoAnswerFgBrush" Color="#FF9A3412"/>
+            <SolidColorBrush x:Key="QsStatusIdleBrush" Color="#FF64748B"/>
+            <SolidColorBrush x:Key="QsStatusRunningBrush" Color="#FF2563EB"/>
+            <SolidColorBrush x:Key="QsStatusDoneBrush" Color="#FF16A34A"/>
+            <SolidColorBrush x:Key="QsStatusFailedBrush" Color="#FFDC2626"/>
+            <SolidColorBrush x:Key="QsPrimaryWashBrush" Color="#1235693E"/>
+            <SolidColorBrush x:Key="QsPrimaryTintBrush" Color="#1A35693E"/>
+            <SolidColorBrush x:Key="QsPrimaryChipStrokeBrush" Color="#5935693E"/>
+            <SolidColorBrush x:Key="QsPrimaryTileStrokeBrush" Color="#8C35693E"/>
+            <SolidColorBrush x:Key="QsSurfaceContainerHighestBrush" Color="#FFE2E6E1"/>
+            <SolidColorBrush x:Key="QsSurfaceContainerHighestSoftBrush" Color="#59E2E6E1"/>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

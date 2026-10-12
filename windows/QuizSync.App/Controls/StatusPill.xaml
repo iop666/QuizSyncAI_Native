@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  状态药丸。逐项复刻 1.1.0 的 `StatusPill`
+  （soundcode/packages/quizsync_ui/lib/src/widgets.dart:94-102）：
+    字号 11.5 / w600 / height 1.2；圆角 AppRadius.chip = 999；
+    filled = true  → 底色 color@12%，无描边
+    filled = false → 底色透明，1px 描边 color@55%
+    内边距 水平 9 / 垂直 4；有图标时图标 13 与文字间距 5。
+-->
+<UserControl
+    x:Class="QuizSync.App.Controls.StatusPill"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Border x:Name="PillShell" Style="{StaticResource QsPillBorderStyle}" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <FontIcon x:Name="GlyphIcon" FontSize="13" Visibility="Collapsed" Margin="0,0,5,0" />
+            <TextBlock x:Name="CaptionText" Style="{StaticResource QsPillTextStyle}" />
+        </StackPanel>
+    </Border>
+</UserControl>

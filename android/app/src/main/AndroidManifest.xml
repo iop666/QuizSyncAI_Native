@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 与主机通信：局域网明文 HTTP + 局域网发现。 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- 悬浮球：`TYPE_APPLICATION_OVERLAY` 的窗口要求声明它（用户在系统设置里授予）。 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- 截屏采集（规格 §3.2）：常驻前台服务复用同一个 MediaProjection 会话。
+         API 34+ 起 `mediaProjection` 这个前台服务类型另有专用权限，缺了 `startForeground`
+         会直接抛 SecurityException。 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <!-- Android 13+ 的常驻通知。**被拒也不能崩**：通知画不出来而已，服务照跑。 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 配对页「方式一：扫码」（规格 §2.1）。权限只在用户点「开始使用（扫码配对）」之后申请，
+         不授权也不影响方式二（粘贴配对链接）与方式三（手动输入）。
+         `required="false"` 是**必须的**：没有摄像头的设备照样要能装、能用另外两种方式配对。 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <application
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.QuizSync"
+    android:enableOnBackInvokedCallback="true">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- 配对深链 `quizsync://pair?host=…&port=…&code=…`：
+                 电脑端 /api/v1/pair/code 返回的 pair_uri 就是它，二维码里放的也是它。
+                 手机扫码/点链接即可配对，不用手输地址与码。 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="quizsync" android:host="pair" />
+            </intent-filter>
+        </activity>
+
+        <!-- 截屏前台服务（规格 §3.2）：`foregroundServiceType="mediaProjection"` 是
+             Android 14 的硬性要求，也是会话能活下来的前提。不导出：只有本应用能起它。 -->
+        <service
+            android:name=".capture.CaptureService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
+
+        <!-- 备选截屏路径（规格 §3.2）：无障碍服务，只用系统的 takeScreenshot 能力，不读屏幕内容。
+             `BIND_ACCESSIBILITY_SERVICE` 是系统绑定无障碍服务的强制权限（声明它是为了让
+             别的应用无法直接绑定）；`accessibilityFlags` 与事件类型见 res/xml/accessibility_capture.xml。 -->
+        <service
+            android:name=".capture.AccessibilityCaptureService"
+            android:exported="false"
+            android:label="@string/accessibility_capture_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_capture" />
+        </service>
+    </application>
+
+</manifest>

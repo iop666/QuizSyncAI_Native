@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Provider 角色（计划 §7.2）：AI 客户端与编排（截屏 / 热键 / 剪贴板 / 托盘后续放这里）。
+       纯逻辑部分可单测；Windows 专有部分只做薄封装。 -->
+
+  <ItemGroup>
+    <!-- 截屏编码（`ScreenJpeg`）：GDI+ 是 Windows 上最短的一条路。
+         替代方案都更差：手写 JPEG 编码器要 300+ 行 DCT/量化/Huffman（风险自担），
+         WIC 的 COM 互操作要 150 行上下。本应用是 Windows 专用，故取 GDI+。 -->
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
+    <!-- DPAPI（AI Key 与设备令牌的加密落盘）：它不在 net10.0 目标框架里，必须单独引。
+         `SecretStore` 与 `AiSettings` 从 `QuizSync.App` 搬到这里，就是为了让**界面**与
+         **无界面 Provider** 读同一份 `ai.json`（否则「界面里配好了、手机上识别说没配」）。 -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QuizSync.Core\QuizSync.Core.csproj" />
+    <ProjectReference Include="..\QuizSync.Data\QuizSync.Data.csproj" />
+    <!-- 与主机对话（探活 / 控制面读配对码 / 取图）。方向是 Provider → ServerBridge
+         （「Windows 客户端」这一侧 → 主机适配层），不会成环。 -->
+    <ProjectReference Include="..\QuizSync.ServerBridge\QuizSync.ServerBridge.csproj" />
+  </ItemGroup>
+
+</Project>

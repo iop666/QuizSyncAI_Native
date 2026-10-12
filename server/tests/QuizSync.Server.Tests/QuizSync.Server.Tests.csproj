@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\QuizSync.Server.Core\QuizSync.Server.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 引用 CLI 保证「先建 CLI 再跑测试」：CLI 的用例把它当独立进程跑，
+         之前不引用时测试找到的是**陈旧产物**（改了 CLI 但测试仍打旧二进制 → 假失败）。 -->
+    <ProjectReference Include="..\..\src\QuizSync.Server.Cli\QuizSync.Server.Cli.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Phase 6 外壳（WinUI 3）。目标框架带 Windows SDK 版本，是 WinUI 3 的硬要求。 -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <RootNamespace>QuizSync.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <!-- 非打包（unpackaged）运行：开发期不需要 MSIX 打包与签名，
+         代价是必须把 Windows App SDK 运行时自带（下面 SelfContained）。 -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+    <!-- DPAPI（本机敏感值加密落盘）：它不在 net10.0-windows 目标框架里，必须单独引。 -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 界面资源。两条约定：
+         ① 顶栏 logo 用仓库根 icon\QuizSync_AI.png —— 1.1.0 顶栏那个 26×26 圆角图就是它；
+            托盘图标单独一张（`statusbar.ico` 的 PNG 源），与应用程序图标刻意区分。
+         ② 界面字体是**系统默认字体**（2.0 起不再随包 MiSans：32MB 的体积换来的是
+            与系统其它应用不一致，用户明确要求改掉）。
+            WinUI 的一个 FontFamily 只能指向**一个字体文件**，所以按字重拆成三个文件、
+            在 ShellStyles.xaml 里做成三个 FontFamily 资源（QsFontRegular / Demibold / Bold），
+            不要指望写 FontWeight=600 能自动切到另一个文件。 -->
+    <Content Include="Assets\app_icon.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\tray_icon.png" CopyToOutputDirectory="PreserveNewest" />
+    <!-- 托盘图标：用 1.1.0 的 assets/statusbar.ico（9 档尺寸 16→256，高 DPI 下才清晰），
+         与应用程序图标刻意不同 —— 托盘上是状态栏小图标，不是应用大图标。 -->
+    <Content Include="Assets\tray.ico" CopyToOutputDirectory="PreserveNewest" />
+    <!-- 悬浮球三态素材（取自 1.1.0 的 apps/desktop/assets/floating_ball_*.png：
+         256×256、32bpp **带透明通道**，圆形铺满整张、白色内芯）。
+         注意别拿仓库根 icon/FloatingBall_*.png 当素材 —— 那是 24bpp 白底的**图标源图**，
+         没有 alpha，直接画出来是个白方块。 -->
+    <Content Include="Assets\ball_idle.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\ball_detecting.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\ball_multipage.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QuizSync.Core\QuizSync.Core.csproj" />
+    <ProjectReference Include="..\QuizSync.Data\QuizSync.Data.csproj" />
+    <ProjectReference Include="..\QuizSync.Provider\QuizSync.Provider.csproj" />
+    <ProjectReference Include="..\QuizSync.ServerBridge\QuizSync.ServerBridge.csproj" />
+  </ItemGroup>
+
+<!-- 2.0 原生化：Windows 11 设置页的官方控件（SettingsCard / SettingsExpander）。
+       版本由参考仓库坐实：WinUI-Gallery/standalone.props L9 = 8.2.251219（8.3.x 只有 preview）。
+       注意 SettingsControls 只带 Triggers、不带 Extensions —— 所以 XAML 里直接用原生
+       <FontIcon>，不要为了 `ui:FontIcon` 再引一个包。 -->
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
+    <PackageReference Include="CommunityToolkit.WinUI.Animations" Version="8.2.251219" />
+  </ItemGroup>
+</Project>
+

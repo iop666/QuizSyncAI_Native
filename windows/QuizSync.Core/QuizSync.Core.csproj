@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 语言无关核心的 C# 移植（计划 §7.2）：Question 模型、prompt、解析、标色。
+       纯计算，不碰文件系统与网络，对测试与无界面模式都友好。 -->
+
+  <ItemGroup>
+    <!-- 配对二维码（`protocol.md` §2.1 的 `quizsync://pair?...`）。
+         用户反馈：Windows 的「连接设备」页只有文字、没有二维码，手机没法扫。
+         选 ZXing.Net 而不是手写编码器：QR 是 Reed-Solomon + 掩码评分的活，
+         手写 400 行换来的是一张**扫不出来的图**且没人能验证；
+         它同时提供解码器，于是「编码对了没有」可以写成一条往返用例（见 `PairQrTests`）。 -->
+    <PackageReference Include="ZXing.Net" Version="0.16.10" />
+  </ItemGroup>
+
+</Project>

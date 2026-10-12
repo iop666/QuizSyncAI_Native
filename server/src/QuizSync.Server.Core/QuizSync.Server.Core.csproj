@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 公共属性（TFM / 可空 / 警告即错误）在 Directory.Build.props 里，这里只写本工程特有的。 -->
+  <ItemGroup>
+    <!-- Core 自己承载 HTTP 宿主（内嵌 Kestrel）：它既被 CLI 加载，也会被桌面端进程内嵌。 -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+  </ItemGroup>
+
+</Project>

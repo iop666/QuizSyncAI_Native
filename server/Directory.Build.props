@@ -1,0 +1,17 @@
+<Project>
+
+  <!-- 三仓统一的编译纪律：警告即错误（CI 与本机同口径）、可空引用全程打开。 -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <!-- 协议里所有字符串都是 UTF-8 JSON，不依赖区域设置（避免 "tr-TR" 之类把 I/i 变小写出错）。 -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

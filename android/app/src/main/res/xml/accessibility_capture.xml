@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  备选截屏路径（规格 §3.2）的服务声明。
+
+  `canTakeScreenshot="true"` 是 Android 11 起 `AccessibilityService.takeScreenshot()` 的**前提**，
+  少了它调用会直接抛。
+
+  事件类型只要 `typeWindowStateChanged`（不是 `typeAllMask`）：本服务**不读屏幕内容**，
+  唯一的用途是调用系统的 takeScreenshot。给得越少，用户与审核都越放心。
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault"
+    android:canTakeScreenshot="true"
+    android:description="@string/accessibility_capture_description"
+    android:notificationTimeout="100"
+    android:summary="@string/accessibility_capture_summary" />

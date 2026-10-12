@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  无障碍服务（备选截屏路径）的文案。规格 §5.3 要求权限引导「只讲需要什么、为什么」，
+  **不点名任何具体系统或品牌**（旧文案里的国产 ROM 名单已过时，删除）。
+
+  这三条会原样显示在系统设置 → 无障碍 的那一页里，所以必须把「它到底做什么、不做什么」写清楚：
+  用户对无障碍权限的警惕是对的，糊弄过去只会被拒绝。
+-->
+<resources>
+    <!-- 应用名（桌面图标 / 最近任务 / 系统设置里的名字）。
+         正式版 = 「AI 双端搜题」；开发版在 `src/debug/res/values/strings.xml` 里覆盖成带（开发版）的那个，
+         这样 debug 与 release **装在同一台机器上时名字也分得清**（包名已经分了：
+         `com.quizsync.android.native.dev` / `com.quizsync.android.native`）。 -->
+    <string name="app_name">AI 双端搜题</string>
+    <string name="accessibility_capture_label">备选截屏（AI 双端搜题）</string>
+    <string name="accessibility_capture_summary">只用于截取屏幕，不读取屏幕内容</string>
+    <string name="accessibility_capture_description">开启后，「AI 双端搜题」可以用系统的截屏能力抓取当前屏幕并识别题目，比屏幕录制路径少一次授权弹窗。\n\n本服务不读取屏幕上的文字与控件内容，也不记录你的操作：它唯一的用途是调用系统提供的 takeScreenshot 截取一帧画面，交给你自己在电脑上的识别服务。\n\n不需要这个能力时，随时可以在这里关掉，应用会自动回到「屏幕录制」路径。</string>
+</resources>

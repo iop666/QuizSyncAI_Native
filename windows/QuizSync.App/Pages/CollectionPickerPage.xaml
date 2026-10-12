@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  任务合集选择页 / 首次使用门。照 1.1.0 的 `CollectionGate` + `CollectionPickerPage`
+  （ui-spec-desktop §2.3.1，出处 collection_picker_page.dart:12-205）：
+
+    CollectionGate：合集列表加载中 → 转圈；没有选中合集 → 渲染本页；否则渲染主界面。
+    本页：AppBar(title: firstRun ? '新建任务合集' : '选择任务合集', automaticallyImplyLeading: false)
+          Center → ConstrainedBox(maxWidth 720) → ListView(padding: 24)
+            [firstRun] SectionCard('第一次使用', ...) + 16
+            SectionCard('新建合集', '例如「期末复习」「第三章作业」') → 输入框 + 「新建并进入」
+            16
+            SectionCard('已有合集', ...) → 空态 或 合集列表
+-->
+<Page
+    x:Class="QuizSync.App.Pages.CollectionPickerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource QsCanvasBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 顶栏：1.1.0 这里是 AppBar，且**没有返回箭头**（automaticallyImplyLeading: false） -->
+        <Border Grid.Row="0" Style="{StaticResource QsAppBarBorderStyle}">
+            <TextBlock x:Name="PageTitle" Margin="18,0,18,0" VerticalAlignment="Center"
+                       Style="{StaticResource QsAppBarTitleStyle}" />
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollMode="Disabled" Padding="24">
+            <StackPanel x:Name="ContentHost" MaxWidth="720" HorizontalAlignment="Center" />
+        </ScrollViewer>
+    </Grid>
+</Page>

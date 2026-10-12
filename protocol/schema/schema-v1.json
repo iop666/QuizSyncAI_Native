@@ -1,0 +1,1260 @@
+{
+  "schema_version": 3,
+  "dialect": "sqlite",
+  "ddl_file": "schema-v1.sql",
+  "version_marker": "PRAGMA user_version = 3",
+  "generated_from": "\u73b0\u6709\u5b9e\u73b0\u5efa\u5e93\u540e\u7684\u771f\u5b9e\u7ed3\u6784\uff08PRAGMA table_info + sqlite_master + PRAGMA foreign_key_list\uff09\uff0c\u9010\u5217\u6838\u5bf9",
+  "counts": {
+    "tables": 11,
+    "columns": 113,
+    "indexes": 13,
+    "foreign_keys": 0
+  },
+  "type_map": {
+    "TEXT": "\u5b57\u7b26\u4e32 / id / hash / \u679a\u4e3e / JSON \u6587\u672c",
+    "INTEGER": "\u6574\u6570\u3001UTC \u6beb\u79d2\u65f6\u95f4\u6233\u3001\u5e03\u5c14\uff080/1\uff0c\u5e26 CHECK\uff09\u3001Lamport",
+    "REAL": "\u6d6e\u70b9\uff08\u76ee\u524d\u53ea\u6709 confidence\uff09"
+  },
+  "notes": [
+    "default \u662f SQL \u5b57\u9762\u91cf\u5bf9\u5e94\u7684\u539f\u751f JSON \u503c\uff1a'{}' \u2192 \"{}\"\uff0c0 \u2192 0\uff0c0.5 \u2192 0.5\u3002",
+    "check \u662f\u5217\u4e0a\u7684 CHECK \u7ea6\u675f\u539f\u6587\uff1b\u53ea\u6709\u5e03\u5c14\u5217\u6709\uff0c\u5f62\u6001\u6052\u4e3a \"<\u5217\u540d>\" IN (0, 1)\u3002",
+    "logical_fk \u662f\u5217\u540d\u7684\u903b\u8f91\u6307\u5411\uff0c\u5b9e\u73b0\u672a\u5efa\u5916\u952e\u7ea6\u675f\uff08foreign_key_list \u4e3a\u7a7a\uff09\u3002",
+    "sync \u63cf\u8ff0\u8be5\u8868\u5728\u540c\u6b65\u91cc\u7684\u89d2\u8272\uff1blocal_only_columns \u91cc\u7684\u5217\u4e0d\u8fdb op\u3001\u4e5f\u4e0d\u88ab\u8fdc\u7aef op \u8986\u76d6\u3002",
+    "role = sync_version / sync_field_clocks / sync_actor / tombstone / local_only / json\u3002"
+  ],
+  "tables": [
+    {
+      "name": "devices",
+      "purpose": "\u5df2\u914d\u5bf9\u8bbe\u5907 / \u5df2\u77e5\u8282\u70b9\uff08\u6bcf\u4e2a device_id \u4e00\u884c\uff09\u3002",
+      "sync": {
+        "participates": true,
+        "entity": "device",
+        "field_level_lww": false,
+        "soft_delete": false,
+        "tombstone_column": null,
+        "local_only_columns": [
+          "token_hash"
+        ],
+        "merge_rule": "\u6309\u4e3b\u952e\u5408\u5e76\uff0c\u540e\u5230\u8005\u5199\u5165"
+      },
+      "columns": [
+        {
+          "name": "device_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "platform",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "token_hash",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "role": "local_only"
+        },
+        {
+          "name": "paired_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "last_seen_at",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "revoked_at",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "app_version",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "indexes": [],
+      "create_sql": "CREATE TABLE \"devices\" (\"device_id\" TEXT NOT NULL, \"name\" TEXT NOT NULL, \"platform\" TEXT NOT NULL, \"token_hash\" TEXT NULL, \"paired_at\" INTEGER NOT NULL, \"last_seen_at\" INTEGER NULL, \"revoked_at\" INTEGER NULL, \"app_version\" TEXT NULL, PRIMARY KEY (\"device_id\"))"
+    },
+    {
+      "name": "images",
+      "purpose": "\u56fe\u7247\u5143\u6570\u636e\uff08\u6587\u4ef6\u5b57\u8282\u5355\u72ec\u5b58\u653e\uff0c\u5e93\u91cc\u53ea\u6709 hash \u4e0e\u5143\u6570\u636e\uff09\u3002",
+      "sync": {
+        "participates": true,
+        "entity": "image",
+        "field_level_lww": false,
+        "soft_delete": false,
+        "tombstone_column": null,
+        "local_only_columns": [
+          "local_path"
+        ],
+        "merge_rule": "\u6309\u4e3b\u952e\uff08hash\uff09\u5408\u5e76\uff0c\u540e\u5230\u8005\u5199\u5165"
+      },
+      "columns": [
+        {
+          "name": "hash",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "size",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "mime",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "width",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "height",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "local_path",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "role": "local_only"
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "uploaded_by",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "devices.device_id"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_images_created",
+          "unique": false,
+          "columns": [
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_images_created ON images (created_at)",
+          "note": "\u7f3a\u6587\u4ef6\u7684\u56fe\u7247\u8865\u4f20\uff1a\u6309 created_at \u5012\u5e8f\u53d6\u6700\u8fd1 200 \u5f20\u3002"
+        }
+      ],
+      "create_sql": "CREATE TABLE \"images\" (\"hash\" TEXT NOT NULL, \"size\" INTEGER NOT NULL, \"mime\" TEXT NOT NULL, \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"local_path\" TEXT NULL, \"created_at\" INTEGER NOT NULL, \"uploaded_by\" TEXT NOT NULL, PRIMARY KEY (\"hash\"))"
+    },
+    {
+      "name": "collections",
+      "purpose": "\u4efb\u52a1\u5408\u96c6\uff1a\u4e00\u6b21\u4efb\u52a1\u7684\u5168\u90e8\u8bc6\u522b\u8bb0\u5f55\u5f52\u5165\u4e00\u4e2a\u5408\u96c6\u3002",
+      "sync": {
+        "participates": true,
+        "entity": "collection",
+        "field_level_lww": true,
+        "soft_delete": true,
+        "tombstone_column": "deleted_at",
+        "local_only_columns": [],
+        "merge_rule": "\u9010\u5b57\u6bb5 LWW\uff1a(lamport, device_id) \u5927\u8005\u80dc"
+      },
+      "columns": [
+        {
+          "name": "collection_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_by",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "role": "sync_actor"
+        },
+        {
+          "name": "lamport",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "role": "sync_version"
+        },
+        {
+          "name": "field_clocks_json",
+          "type": "TEXT",
+          "not_null": true,
+          "default": "{}",
+          "primary_key": false,
+          "json_shape": "{\"<\u5217\u540d>\": {\"l\": <lamport>, \"d\": \"<device_id>\"}}\uff0c\u53ea\u542b\u88ab\u663e\u5f0f\u5199\u8fc7\u7684\u5b57\u6bb5",
+          "role": "sync_field_clocks"
+        },
+        {
+          "name": "deleted_at",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "role": "tombstone"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_collections_created",
+          "unique": false,
+          "columns": [
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_collections_created ON collections (created_at)",
+          "note": "\u5408\u96c6\u5217\u8868\u6309\u521b\u5efa\u65f6\u95f4\u6392\u5e8f\u3002"
+        }
+      ],
+      "create_sql": "CREATE TABLE \"collections\" (\"collection_id\" TEXT NOT NULL, \"name\" TEXT NOT NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"updated_by\" TEXT NOT NULL, \"lamport\" INTEGER NOT NULL DEFAULT 0, \"field_clocks_json\" TEXT NOT NULL DEFAULT '{}', \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"collection_id\"))"
+    },
+    {
+      "name": "sessions",
+      "purpose": "\u4f1a\u8bdd\uff1a\u4e00\u6b21\u8bc6\u522b = \u4e00\u6761\u5386\u53f2\u8bb0\u5f55\u3002",
+      "sync": {
+        "participates": true,
+        "entity": "session",
+        "field_level_lww": true,
+        "soft_delete": true,
+        "tombstone_column": "deleted_at",
+        "local_only_columns": [],
+        "merge_rule": "\u9010\u5b57\u6bb5 LWW\uff1a(lamport, device_id) \u5927\u8005\u80dc"
+      },
+      "columns": [
+        {
+          "name": "session_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "task_id",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "tasks.task_id"
+        },
+        {
+          "name": "collection_id",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "collections.collection_id"
+        },
+        {
+          "name": "image_hash",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "images.hash"
+        },
+        {
+          "name": "source_device",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "devices.device_id"
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "error_code",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "error_message",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "ai_provider",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "ai_model",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "prompt_version",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "raw_response",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "cached",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "check": "\"cached\" IN (0, 1)"
+        },
+        {
+          "name": "question_count",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false
+        },
+        {
+          "name": "latency_ms",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_by",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "role": "sync_actor"
+        },
+        {
+          "name": "lamport",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "role": "sync_version"
+        },
+        {
+          "name": "field_clocks_json",
+          "type": "TEXT",
+          "not_null": true,
+          "default": "{}",
+          "primary_key": false,
+          "json_shape": "{\"<\u5217\u540d>\": {\"l\": <lamport>, \"d\": \"<device_id>\"}}\uff0c\u53ea\u542b\u88ab\u663e\u5f0f\u5199\u8fc7\u7684\u5b57\u6bb5",
+          "role": "sync_field_clocks"
+        },
+        {
+          "name": "deleted_at",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "role": "tombstone"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_sessions_collection",
+          "unique": false,
+          "columns": [
+            "collection_id"
+          ],
+          "sql": "CREATE INDEX idx_sessions_collection ON sessions (collection_id)",
+          "note": "\u6309\u5408\u96c6\u5206\u7ec4\uff08\u5408\u96c6\u5bfc\u51fa / \u5408\u96c6\u5185\u5386\u53f2\uff09\u3002"
+        },
+        {
+          "name": "idx_sessions_created",
+          "unique": false,
+          "columns": [
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_sessions_created ON sessions (created_at)",
+          "note": "\u5386\u53f2\u5217\u8868\u6309\u65f6\u95f4\u5012\u5e8f\u3002"
+        },
+        {
+          "name": "idx_sessions_hash",
+          "unique": false,
+          "columns": [
+            "image_hash"
+          ],
+          "sql": "CREATE INDEX idx_sessions_hash ON sessions (image_hash)",
+          "note": "\u6309\u56fe\u7247 hash \u627e\u4f1a\u8bdd\uff08\u540c\u56fe\u590d\u7528 / \u7f29\u7565\u56fe\u53cd\u67e5\uff09\u3002"
+        },
+        {
+          "name": "idx_sessions_status",
+          "unique": false,
+          "columns": [
+            "status"
+          ],
+          "sql": "CREATE INDEX idx_sessions_status ON sessions (status)",
+          "note": "\u6309\u72b6\u6001\u8fc7\u6ee4\uff08queued / analyzing \u7684\u4f1a\u8bdd\uff09\u3002"
+        }
+      ],
+      "create_sql": "CREATE TABLE \"sessions\" (\"session_id\" TEXT NOT NULL, \"task_id\" TEXT NULL, \"collection_id\" TEXT NULL, \"image_hash\" TEXT NOT NULL, \"source_device\" TEXT NOT NULL, \"status\" TEXT NOT NULL, \"error_code\" TEXT NULL, \"error_message\" TEXT NULL, \"ai_provider\" TEXT NULL, \"ai_model\" TEXT NULL, \"prompt_version\" TEXT NULL, \"raw_response\" TEXT NULL, \"cached\" INTEGER NOT NULL DEFAULT 0 CHECK (\"cached\" IN (0, 1)), \"question_count\" INTEGER NOT NULL DEFAULT 0, \"latency_ms\" INTEGER NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"updated_by\" TEXT NOT NULL, \"lamport\" INTEGER NOT NULL DEFAULT 0, \"field_clocks_json\" TEXT NOT NULL DEFAULT '{}', \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"session_id\"))"
+    },
+    {
+      "name": "session_images",
+      "purpose": "\u4f1a\u8bdd\u7684\u4e00\u9875\u56fe\u7247\uff08\u591a\u9875\u9898\u76ee\u4e00\u6b21\u8bc6\u522b\uff09\u3002",
+      "sync": {
+        "participates": true,
+        "entity": "session_image",
+        "field_level_lww": true,
+        "soft_delete": true,
+        "tombstone_column": "deleted_at",
+        "local_only_columns": [],
+        "merge_rule": "\u9010\u5b57\u6bb5 LWW\uff1a(lamport, device_id) \u5927\u8005\u80dc"
+      },
+      "columns": [
+        {
+          "name": "session_image_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "session_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "sessions.session_id"
+        },
+        {
+          "name": "ordinal",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "image_hash",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "images.hash"
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_by",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "role": "sync_actor"
+        },
+        {
+          "name": "lamport",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "role": "sync_version"
+        },
+        {
+          "name": "field_clocks_json",
+          "type": "TEXT",
+          "not_null": true,
+          "default": "{}",
+          "primary_key": false,
+          "json_shape": "{\"<\u5217\u540d>\": {\"l\": <lamport>, \"d\": \"<device_id>\"}}\uff0c\u53ea\u542b\u88ab\u663e\u5f0f\u5199\u8fc7\u7684\u5b57\u6bb5",
+          "role": "sync_field_clocks"
+        },
+        {
+          "name": "deleted_at",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "role": "tombstone"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_session_images_session",
+          "unique": false,
+          "columns": [
+            "session_id",
+            "ordinal"
+          ],
+          "sql": "CREATE INDEX idx_session_images_session ON session_images (session_id, ordinal)",
+          "note": "\u53d6\u67d0\u4f1a\u8bdd\u7684\u9875\u5e8f\uff08session_id, ordinal\uff09\u3002"
+        }
+      ],
+      "create_sql": "CREATE TABLE \"session_images\" (\"session_image_id\" TEXT NOT NULL, \"session_id\" TEXT NOT NULL, \"ordinal\" INTEGER NOT NULL, \"image_hash\" TEXT NOT NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"updated_by\" TEXT NOT NULL, \"lamport\" INTEGER NOT NULL DEFAULT 0, \"field_clocks_json\" TEXT NOT NULL DEFAULT '{}', \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"session_image_id\"))"
+    },
+    {
+      "name": "questions",
+      "purpose": "\u9898\u76ee\uff08\u4f1a\u8bdd\u5185\u591a\u9898\uff0cordinal \u4ece 0 \u8d77\uff09\u3002",
+      "sync": {
+        "participates": true,
+        "entity": "question",
+        "field_level_lww": true,
+        "soft_delete": true,
+        "tombstone_column": "deleted_at",
+        "local_only_columns": [],
+        "merge_rule": "\u9010\u5b57\u6bb5 LWW\uff1a(lamport, device_id) \u5927\u8005\u80dc"
+      },
+      "columns": [
+        {
+          "name": "question_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "session_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "sessions.session_id"
+        },
+        {
+          "name": "ordinal",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "question_no",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "stem",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "material",
+          "type": "TEXT",
+          "not_null": true,
+          "default": "",
+          "primary_key": false
+        },
+        {
+          "name": "type",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "options_json",
+          "type": "TEXT",
+          "not_null": true,
+          "default": "[]",
+          "primary_key": false,
+          "json_shape": "[{\"label\": \"A\", \"text\": \"...\"}]\uff08\u9009\u9879 label \u4e0e\u6587\u672c\uff09",
+          "role": "json"
+        },
+        {
+          "name": "choice_json",
+          "type": "TEXT",
+          "not_null": true,
+          "default": "[]",
+          "primary_key": false,
+          "json_shape": "[\"A\", \"C\"]\uff08\u88ab\u9009\u4e2d\u7684\u9009\u9879 label\uff1b\u4e0d\u5728 options \u91cc\u7684 label \u5df2\u88ab\u5254\u9664\uff09",
+          "role": "json"
+        },
+        {
+          "name": "answer_text",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "analysis",
+          "type": "TEXT",
+          "not_null": true,
+          "default": "",
+          "primary_key": false
+        },
+        {
+          "name": "confidence",
+          "type": "REAL",
+          "not_null": true,
+          "default": 0.5,
+          "primary_key": false
+        },
+        {
+          "name": "need_review",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "check": "\"need_review\" IN (0, 1)"
+        },
+        {
+          "name": "answer_in_image",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "check": "\"answer_in_image\" IN (0, 1)"
+        },
+        {
+          "name": "incomplete",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "check": "\"incomplete\" IN (0, 1)"
+        },
+        {
+          "name": "answer_guessed",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "check": "\"answer_guessed\" IN (0, 1)"
+        },
+        {
+          "name": "warnings_json",
+          "type": "TEXT",
+          "not_null": true,
+          "default": "[]",
+          "primary_key": false,
+          "json_shape": "[\"...\"]\uff08\u89e3\u6790\u544a\u8b66\u5b57\u7b26\u4e32\u6570\u7ec4\uff09",
+          "role": "json"
+        },
+        {
+          "name": "analysis_edited",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "check": "\"analysis_edited\" IN (0, 1)"
+        },
+        {
+          "name": "answer_edited",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "check": "\"answer_edited\" IN (0, 1)"
+        },
+        {
+          "name": "field_clocks_json",
+          "type": "TEXT",
+          "not_null": true,
+          "default": "{}",
+          "primary_key": false,
+          "json_shape": "{\"<\u5217\u540d>\": {\"l\": <lamport>, \"d\": \"<device_id>\"}}\uff0c\u53ea\u542b\u88ab\u663e\u5f0f\u5199\u8fc7\u7684\u5b57\u6bb5",
+          "role": "sync_field_clocks"
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "updated_by",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "role": "sync_actor"
+        },
+        {
+          "name": "lamport",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "role": "sync_version"
+        },
+        {
+          "name": "deleted_at",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "role": "tombstone"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_questions_session",
+          "unique": false,
+          "columns": [
+            "session_id",
+            "ordinal"
+          ],
+          "sql": "CREATE INDEX idx_questions_session ON questions (session_id, ordinal)",
+          "note": "\u53d6\u67d0\u4f1a\u8bdd\u7684\u9898\u76ee\uff08session_id, ordinal\uff09\u3002"
+        },
+        {
+          "name": "idx_questions_stem",
+          "unique": false,
+          "columns": [
+            "stem"
+          ],
+          "sql": "CREATE INDEX idx_questions_stem ON questions (stem)",
+          "note": "\u9898\u5e72\u524d\u7f00\u68c0\u7d22 / \u9000\u5316 LIKE \u68c0\u7d22\u3002"
+        }
+      ],
+      "create_sql": "CREATE TABLE \"questions\" (\"question_id\" TEXT NOT NULL, \"session_id\" TEXT NOT NULL, \"ordinal\" INTEGER NOT NULL, \"question_no\" TEXT NULL, \"stem\" TEXT NOT NULL, \"material\" TEXT NOT NULL DEFAULT '', \"type\" TEXT NOT NULL, \"options_json\" TEXT NOT NULL DEFAULT '[]', \"choice_json\" TEXT NOT NULL DEFAULT '[]', \"answer_text\" TEXT NULL, \"analysis\" TEXT NOT NULL DEFAULT '', \"confidence\" REAL NOT NULL DEFAULT 0.5, \"need_review\" INTEGER NOT NULL DEFAULT 0 CHECK (\"need_review\" IN (0, 1)), \"answer_in_image\" INTEGER NOT NULL DEFAULT 0 CHECK (\"answer_in_image\" IN (0, 1)), \"incomplete\" INTEGER NOT NULL DEFAULT 0 CHECK (\"incomplete\" IN (0, 1)), \"answer_guessed\" INTEGER NOT NULL DEFAULT 0 CHECK (\"answer_guessed\" IN (0, 1)), \"warnings_json\" TEXT NOT NULL DEFAULT '[]', \"analysis_edited\" INTEGER NOT NULL DEFAULT 0 CHECK (\"analysis_edited\" IN (0, 1)), \"answer_edited\" INTEGER NOT NULL DEFAULT 0 CHECK (\"answer_edited\" IN (0, 1)), \"field_clocks_json\" TEXT NOT NULL DEFAULT '{}', \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"updated_by\" TEXT NOT NULL, \"lamport\" INTEGER NOT NULL DEFAULT 0, \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"question_id\"))"
+    },
+    {
+      "name": "sync_ops",
+      "purpose": "\u64cd\u4f5c\u65e5\u5fd7\uff1a\u540c\u6b65\u7684\u552f\u4e00\u8f7d\u4f53\u3002",
+      "sync": {
+        "participates": false,
+        "entity": null,
+        "field_level_lww": false,
+        "soft_delete": false,
+        "tombstone_column": null,
+        "local_only_columns": [],
+        "merge_rule": "\u6309 op_id \u5e42\u7b49\uff1a\u91cd\u590d op \u76f4\u63a5\u5ffd\u7565\uff0c\u4e0d\u4ea7\u751f\u526f\u4f5c\u7528"
+      },
+      "columns": [
+        {
+          "name": "op_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "device_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "lamport",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "entity",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "entity_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "\u6309 entity \u6307\u5411\u5bf9\u5e94\u8868\u7684\u4e3b\u952e\uff08\u591a\u6001\uff0c\u65e0\u7ea6\u675f\uff09"
+        },
+        {
+          "name": "op_type",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "fields_json",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "json_shape": "{\"<\u5217\u540d>\": <\u76ee\u6807\u503c>}\uff0c\u53ea\u542b\u672c\u6b21\u771f\u6b63\u6539\u52a8\u7684\u5b57\u6bb5",
+          "role": "json"
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_ops_entity",
+          "unique": false,
+          "columns": [
+            "entity",
+            "entity_id"
+          ],
+          "sql": "CREATE INDEX idx_ops_entity ON sync_ops (entity, entity_id)",
+          "role": "entity_version",
+          "note": "\u53d6\u67d0\u5b9e\u4f53\u7684\u6700\u5927 lamport\uff08\u5893\u7891 GC \u7684\u786e\u8ba4\u5224\u636e\uff09\u3002"
+        },
+        {
+          "name": "idx_ops_lamport",
+          "unique": false,
+          "columns": [
+            "device_id",
+            "lamport"
+          ],
+          "sql": "CREATE INDEX idx_ops_lamport ON sync_ops (device_id, lamport)",
+          "role": "sync_cursor",
+          "note": "\u540c\u6b65\u6e38\u6807\u7d22\u5f15\uff1a\u63a8\u9001\u4e0e\u62c9\u53d6\u90fd\u6309 (device_id, lamport) \u9012\u589e\u7ffb\u9875\u3002"
+        }
+      ],
+      "create_sql": "CREATE TABLE \"sync_ops\" (\"op_id\" TEXT NOT NULL, \"device_id\" TEXT NOT NULL, \"lamport\" INTEGER NOT NULL, \"entity\" TEXT NOT NULL, \"entity_id\" TEXT NOT NULL, \"op_type\" TEXT NOT NULL, \"fields_json\" TEXT NOT NULL, \"created_at\" INTEGER NOT NULL, PRIMARY KEY (\"op_id\"))"
+    },
+    {
+      "name": "peer_state",
+      "purpose": "\u6bcf\u4e2a\u5bf9\u7aef\u7684\u540c\u6b65\u6c34\u4f4d\u7ebf\uff08\u672c\u673a\u534f\u8c03\u72b6\u6001\uff0c\u8868\u540d\u5355\u6570\uff09\u3002",
+      "sync": {
+        "participates": false,
+        "entity": null,
+        "field_level_lww": false,
+        "soft_delete": false,
+        "tombstone_column": null,
+        "local_only_columns": [
+          "sent_lamport",
+          "acked_lamport",
+          "last_sync_at"
+        ],
+        "merge_rule": "\u672c\u673a\u534f\u8c03\u72b6\u6001\uff0c\u53ea\u589e\u4e0d\u51cf\uff08\u6c34\u4f4d\u7ebf\u5355\u8c03\uff09"
+      },
+      "columns": [
+        {
+          "name": "peer_device_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true,
+          "logical_fk": "devices.device_id"
+        },
+        {
+          "name": "sent_lamport",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "role": "local_only"
+        },
+        {
+          "name": "acked_lamport",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false,
+          "role": "local_only"
+        },
+        {
+          "name": "last_sync_at",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "role": "local_only"
+        }
+      ],
+      "indexes": [],
+      "create_sql": "CREATE TABLE \"peer_state\" (\"peer_device_id\" TEXT NOT NULL, \"sent_lamport\" INTEGER NOT NULL DEFAULT 0, \"acked_lamport\" INTEGER NOT NULL DEFAULT 0, \"last_sync_at\" INTEGER NULL, PRIMARY KEY (\"peer_device_id\"))"
+    },
+    {
+      "name": "tasks",
+      "purpose": "\u5206\u6790\u4efb\u52a1\uff08\u79bb\u7ebf\u961f\u5217\u4e5f\u5728\u5176\u4e2d\uff09\u3002",
+      "sync": {
+        "participates": false,
+        "entity": null,
+        "field_level_lww": false,
+        "soft_delete": false,
+        "tombstone_column": null,
+        "local_only_columns": [
+          "*"
+        ],
+        "merge_rule": "\u672c\u673a\u4efb\u52a1\u961f\u5217\uff0c\u6574\u8868\u4e0d\u540c\u6b65"
+      },
+      "columns": [
+        {
+          "name": "task_id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "image_hash",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "images.hash"
+        },
+        {
+          "name": "source_device",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "attempts",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": 0,
+          "primary_key": false
+        },
+        {
+          "name": "error_code",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "session_id",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "sessions.session_id"
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "started_at",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "finished_at",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "payload_json",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false,
+          "json_shape": "{\"image_hashes\": [\"...\"], \"collection_id\": \"...\"} \u6216 null\uff08\u79bb\u7ebf\u961f\u5217\u53c2\u6570\uff09",
+          "role": "json"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_tasks_status",
+          "unique": false,
+          "columns": [
+            "status",
+            "created_at"
+          ],
+          "sql": "CREATE INDEX idx_tasks_status ON tasks (status, created_at)",
+          "note": "\u6309\u72b6\u6001\u53d6\u4efb\u52a1\uff08\u961f\u5217\u5904\u7406\u6309 created_at \u987a\u5e8f\uff09\u3002"
+        }
+      ],
+      "create_sql": "CREATE TABLE \"tasks\" (\"task_id\" TEXT NOT NULL, \"image_hash\" TEXT NOT NULL, \"source_device\" TEXT NOT NULL, \"status\" TEXT NOT NULL, \"attempts\" INTEGER NOT NULL DEFAULT 0, \"error_code\" TEXT NULL, \"session_id\" TEXT NULL, \"created_at\" INTEGER NOT NULL, \"started_at\" INTEGER NULL, \"finished_at\" INTEGER NULL, \"payload_json\" TEXT NULL, PRIMARY KEY (\"task_id\"))"
+    },
+    {
+      "name": "settings",
+      "purpose": "\u672c\u673a\u8bbe\u7f6e\u4e0e\u672c\u5730\u534f\u8c03\u72b6\u6001\uff08\u4e0d\u542b\u5bc6\u94a5\uff09\u3002",
+      "sync": {
+        "participates": false,
+        "entity": null,
+        "field_level_lww": false,
+        "soft_delete": false,
+        "tombstone_column": null,
+        "local_only_columns": [
+          "*"
+        ],
+        "merge_rule": "\u672c\u673a\u952e\u503c\u8868\uff0c\u6574\u8868\u4e0d\u540c\u6b65"
+      },
+      "columns": [
+        {
+          "name": "key",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "value",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "indexes": [],
+      "create_sql": "CREATE TABLE \"settings\" (\"key\" TEXT NOT NULL, \"value\" TEXT NOT NULL, PRIMARY KEY (\"key\"))"
+    },
+    {
+      "name": "ai_usage",
+      "purpose": "AI \u7528\u91cf\u4e0e\u914d\u989d\uff08\u8868\u540d\u5355\u6570\uff09\u3002",
+      "sync": {
+        "participates": false,
+        "entity": null,
+        "field_level_lww": false,
+        "soft_delete": false,
+        "tombstone_column": null,
+        "local_only_columns": [
+          "*"
+        ],
+        "merge_rule": "\u672c\u673a\u8bb0\u8d26\uff0c\u6574\u8868\u4e0d\u540c\u6b65"
+      },
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": true
+        },
+        {
+          "name": "called_at",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "model",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "prompt_version",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "image_hash",
+          "type": "TEXT",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "logical_fk": "images.hash"
+        },
+        {
+          "name": "ok",
+          "type": "INTEGER",
+          "not_null": true,
+          "default": null,
+          "primary_key": false,
+          "check": "\"ok\" IN (0, 1)"
+        },
+        {
+          "name": "error_code",
+          "type": "TEXT",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        },
+        {
+          "name": "latency_ms",
+          "type": "INTEGER",
+          "not_null": false,
+          "default": null,
+          "primary_key": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_usage_called",
+          "unique": false,
+          "columns": [
+            "called_at"
+          ],
+          "sql": "CREATE INDEX idx_usage_called ON ai_usage (called_at)",
+          "note": "\u7528\u91cf\u6309\u65f6\u95f4\u7edf\u8ba1\u3002"
+        }
+      ],
+      "create_sql": "CREATE TABLE \"ai_usage\" (\"id\" TEXT NOT NULL, \"called_at\" INTEGER NOT NULL, \"model\" TEXT NOT NULL, \"prompt_version\" TEXT NOT NULL, \"image_hash\" TEXT NOT NULL, \"ok\" INTEGER NOT NULL CHECK (\"ok\" IN (0, 1)), \"error_code\" TEXT NULL, \"latency_ms\" INTEGER NULL, PRIMARY KEY (\"id\"))"
+    }
+  ],
+  "fts": {
+    "available": "\u53ef\u9009\uff1a\u5f15\u64ce\u4e0d\u652f\u6301 FTS5 \u6216 trigram \u65f6\u6574\u6bb5\u8df3\u8fc7\uff0c\u68c0\u7d22\u9000\u5316\u4e3a LIKE",
+    "virtual_table": "questions_fts",
+    "tokenizer": "trigram",
+    "content_table": "questions",
+    "indexed_columns": [
+      "stem",
+      "analysis"
+    ],
+    "shadow_tables_are_internal": true,
+    "triggers": [
+      "questions_fts_ai",
+      "questions_fts_ad",
+      "questions_fts_au"
+    ],
+    "statements": [
+      "CREATE VIRTUAL TABLE questions_fts USING fts5(stem, analysis, content='questions', content_rowid='rowid', tokenize='trigram')",
+      "CREATE TRIGGER questions_fts_ad AFTER DELETE ON questions BEGIN INSERT INTO questions_fts(questions_fts, rowid, stem, analysis) VALUES ('delete', old.rowid, old.stem, old.analysis); END",
+      "CREATE TRIGGER questions_fts_ai AFTER INSERT ON questions BEGIN INSERT INTO questions_fts(rowid, stem, analysis) VALUES (new.rowid, new.stem, new.analysis); END",
+      "CREATE TRIGGER questions_fts_au AFTER UPDATE ON questions BEGIN INSERT INTO questions_fts(questions_fts, rowid, stem, analysis) VALUES ('delete', old.rowid, old.stem, old.analysis); INSERT INTO questions_fts(rowid, stem, analysis) VALUES (new.rowid, new.stem, new.analysis); END"
+    ]
+  },
+  "migrations": [
+    {
+      "from": 1,
+      "to": 2,
+      "reason": "\u4efb\u52a1\u5408\u96c6 / \u591a\u9875\u8bc6\u522b / \u9898\u76ee\u4e0d\u5168\u4e0e AI \u731c\u6d4b\u6807\u8bb0 / \u79bb\u7ebf\u961f\u5217\u53c2\u6570",
+      "statements": [
+        "CREATE TABLE collections  \u2014\u2014 \u89c1\u672c\u6587\u4ef6\u8868\u5b9a\u4e49\uff08v2 \u8d77\u5c31\u4f4d\uff09",
+        "CREATE TABLE session_images  \u2014\u2014 \u89c1\u672c\u6587\u4ef6\u8868\u5b9a\u4e49\uff08v2 \u8d77\u5c31\u4f4d\uff09",
+        "ALTER TABLE sessions ADD COLUMN collection_id TEXT NULL",
+        "ALTER TABLE questions ADD COLUMN incomplete INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE questions ADD COLUMN answer_guessed INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE tasks ADD COLUMN payload_json TEXT NULL"
+      ]
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "reason": "\u9605\u8bfb\u7c7b\u9898\u76ee\u7684\u6750\u6599\u5217",
+      "statements": [
+        "ALTER TABLE questions ADD COLUMN material TEXT NOT NULL DEFAULT ''"
+      ]
+    }
+  ],
+  "self_heal_columns": [
+    "collections.deleted_at INTEGER",
+    "sessions.collection_id TEXT",
+    "questions.incomplete INTEGER NOT NULL DEFAULT 0",
+    "questions.answer_guessed INTEGER NOT NULL DEFAULT 0",
+    "questions.material TEXT NOT NULL DEFAULT ''",
+    "tasks.payload_json TEXT"
+  ]
+}

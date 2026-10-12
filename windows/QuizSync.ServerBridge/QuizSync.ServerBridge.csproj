@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ServerBridge（计划 §7.2）：连接/内嵌 Server 的适配层 —— 端口探测、控制令牌发现、
+       单实例互斥、客户端调用。不碰 UI，可单测。
+
+       「内嵌」这一半从第 167 轮起真的接线了（`EmbeddedHost`）：本工程直接引用
+       `QuizSync.Server.Core` —— 它自带 Kestrel 宿主（`QuizSyncHost.StartAsync`），
+       那边 csproj 里写得很清楚：「Core 自己承载 HTTP 宿主（内嵌 Kestrel）：它既被 CLI 加载，
+       也会被桌面端进程内嵌」。
+
+       **两仓拆分后本仓自包含**：服务端源码已并入本仓 `server/`，路径即
+       `..\..\server\src\QuizSync.Server.Core\...`（从 `windows/QuizSync.ServerBridge/`
+       上两级到仓根，再进 `server/`）。若要指向外部 checkout，用
+       `-p:QuizSyncServerCoreProject=<路径>` 覆盖。 -->
+
+  <PropertyGroup>
+    <!-- 仓内路径；允许用 -p:QuizSyncServerCoreProject=... 覆盖（例如指向外部 checkout）。 -->
+    <QuizSyncServerCoreProject Condition="'$(QuizSyncServerCoreProject)' == ''">$(MSBuildThisFileDirectory)..\..\server\src\QuizSync.Server.Core\QuizSync.Server.Core.csproj</QuizSyncServerCoreProject>
+  </PropertyGroup>
+
+  <Target Name="QuizSyncServerCoreCheck" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(QuizSyncServerCoreProject)')"
+           Text="找不到内嵌宿主用的 QuizSync.Server.Core：$(QuizSyncServerCoreProject)。本仓应自带 server/ 目录（协议与服务端已并入本仓）；也可用 -p:QuizSyncServerCoreProject=&lt;路径&gt; 指定。" />
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QuizSync.Core\QuizSync.Core.csproj" />
+    <ProjectReference Include="$(QuizSyncServerCoreProject)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Core 的宿主是 ASP.NET Core（Kestrel）：本工程要能编译到那些类型。
+         显式写出来而不是靠传递，免得哪天 Core 把它挪走时这里静默少一半。 -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>

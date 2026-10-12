@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  **只覆盖 debug 变体**的应用名：开发包与正式包装在同一台机器上时，桌面图标下要一眼分得清
+  （包名也已经分了：`com.quizsync.android.native.dev` vs `com.quizsync.android.native`）。
+  文案与改名前的 `AndroidManifest.xml` 里写的**逐字一致**，免得设备上的观感与验证脚本的预期一起变。
+-->
+<resources>
+    <string name="app_name">AI 双端搜题（开发版）</string>
+</resources>
